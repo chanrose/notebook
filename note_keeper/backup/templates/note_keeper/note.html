@@ -5,7 +5,7 @@
 
 {% block mainbody %} 
 <hr />
-<p class="text-center"> {% if note.doc >  note.modify_date %} Created: {{ note.doc }} {% endif %} 
+<p class="text-center"> {% if note.doc >= note.modify_date %} Created: {{ note.doc }} {% endif %} 
 {% if note.modify_date > note.doc %} Created: {{ note.doc }}, Updated: {{ note.modify_date }} {% endif %} </p>
 
 <p> {{ note.content | linebreaks }} </p>

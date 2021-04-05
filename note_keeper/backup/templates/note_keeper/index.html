@@ -12,8 +12,7 @@
 			<div class="flex-item mx-4 m-1" style="height: 250px">
 				<div class="card" style="width: 18rem; height: 15rem">
 					<div class="card-body">
-						<h5 class="card-title"><a href="{% url 'note_keeper:note' note.title %}">
-						{{ note.title }}</a></h5>
+						<h5 class="card-title"><a href="{% url 'note_keeper:note' note.title %}">{{ note.title }}</a></h5>
 						<h6 class="card-subtitle mb-2 text-muted"> {{ note.doc }} </h6>
 						<p class="card-text">{{ note.content | truncatewords:10 }} </p>
 					</div>
@@ -40,8 +39,7 @@
 		</div>
 	{% else %}
 	<ul>
-		<p> Your notebook is empty right now!
-		</p>
+		<p> No note are available here. </p>
 	</ul>
 	{% endif %}
 
@@ -73,7 +71,7 @@ Save
 		{% for note in all_note %}
 		<li><a href="{% url 'note_keeper:note' note.title %}"> {{ note.title }} </a></li>
 		{% empty %}
-		 Your notebook is empty right now!
+		 No note are available here 
 		{% endfor %}
 	</ul>
 
