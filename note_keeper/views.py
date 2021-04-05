@@ -5,11 +5,13 @@ from django.views import generic
 from .models import Note
 from django.utils import timezone
 from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 # Create your views here.
 
 
-class IndexView(generic.ListView):
+class IndexView(LoginRequiredMixin, generic.ListView):
+    login_url = '/accounts/login'
     template_name = 'note_keeper/index.html'
     context_object_name = 'latest_note_list'
 
@@ -23,7 +25,7 @@ class IndexView(generic.ListView):
         context['all_note'] = Note.objects.all()
         return context
 
-class DetailView(generic.DetailView):
+class DetailView(LoginRequiredMixin, generic.DetailView):
     model = Note
     template_name = 'note_keeper/note.html'
 
