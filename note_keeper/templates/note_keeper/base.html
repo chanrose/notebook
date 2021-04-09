@@ -15,7 +15,10 @@
   <body>
    <section>
    {% comment %} Header {% endcomment %}
-    <p class="margin-bot text-grey">  {% block currPage %} Index {% endblock%}</p>
+   <div class="margin-bot">
+    <p class="text-grey" style="float: left">  {% block currPage %} Index {% endblock%}</p>
+	<p style="float: right">Welcome <span class="text-gray"> {{ request.user.username }} </span> | <a href="{% url 'logout' %}" class="text-danger"> Log out </a> </p>
+   </div>
 	<div class="align-center">
     <img class="margin-bot" src="{% static 'note_keeper/images/note.svg' %}" height="250 px" width="250 px">
     <h1>{% block heading1 %} Note Keeper {% endblock %} </h1>
@@ -46,7 +49,6 @@
       <hr>
       <div class="align-center">
         <p><address>Made by <br /> Chan Broset</address></p>
-        <p>  </p>
       </div>
     </section>
  
