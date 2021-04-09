@@ -61,6 +61,9 @@ def delete_note(request, note_title):
         if note.user != request.user:
             messages.info(request, 'You cannot delete other people note')
             return HttpResponseRedirect(reverse('note_keeper:index'))
+        if not request.user.has_perm('note_keeper.delete_note'):
+            messages.info(request, 'No permission to delete')
+            return HttpResponseRedirect(reverse('note_keeper:index'))
         messages.info(request, 'Note title #{} has been deleted'.format(note_title))
         Note.objects.filter(pk=note_title).delete()
         return HttpResponseRedirect(reverse('note_keeper:index'))
