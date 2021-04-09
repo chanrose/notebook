@@ -19,7 +19,7 @@ class IndexView(LoginRequiredMixin, generic.ListView):
 
     def get_context_data(self, **kwargs):
         context = super(IndexView, self).get_context_data(**kwargs)
-        context['all_note'] = Note.objects.all()
+        context['all_note'] = Note.objects.filter(user=self.request.user).all()
         return context
 
 class DetailView(LoginRequiredMixin, generic.DetailView):
