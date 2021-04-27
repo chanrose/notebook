@@ -6,40 +6,64 @@ from .models import Note
 from django.utils import timezone
 from django.contrib import messages
 from django.http import Http404
+from django.contrib.auth.mixins import LoginRequiredMixin
 
-
-class IndexView(generic.ListView):
+class IndexView(LoginRequiredMixin, generic.ListView):
+    login_url = '/accounts/login/'
     template_name = 'note_keeper/index.html'
     context_object_name = 'latest_note_list'
 
     def get_queryset(self):
         """Return the last five published Note."""
-        return Note.objects.filter(modify_date__lte=timezone.now()).order_by('-modify_date')[:3]
+        return Note.objects.filter(user=self.request.user).filter(modify_date__lte=timezone.now()).order_by('-modify_date')[:3]
 
     def get_context_data(self, **kwargs):
         context = super(IndexView, self).get_context_data(**kwargs)
-        context['all_note'] = Note.objects.all()
+        context['all_note'] = Note.objects.filter(user=self.request.user).all()
         return context
 
-class DetailView(generic.DetailView):
+class DetailView(LoginRequiredMixin, generic.DetailView):
+    login_url = '/accounts/login/'
     model = Note
     template_name = 'note_keeper/note.html'
 
     def get(self, request, *args, **kwargs):
         try:
             self.object = self.get_object()
+            if self.object.user != self.request.user:
+                raise Http404
         except Http404:
-            messages.info(request, "There is no such note in our notebook")
+            messages.info(request, "There is no such note in your account")
             return HttpResponseRedirect(reverse('note_keeper:index'))
         context = self.get_context_data(object=self.object)
         return self.render_to_response(context)
 
-class EditView(generic.DetailView):
+class EditView(LoginRequiredMixin, generic.DetailView):
+    login_url = '/accounts/login/'
     model = Note
     template_name = 'note_keeper/edit_note.html'
 
+    def get(self, request, *args, **kwargs):
+        try:
+            self.object = self.get_object()
+            if self.object.user != self.request.user:
+                raise Http404
+        except Http404:
+            messages.info(request, "There is no such note in your account")
+            return HttpResponseRedirect(reverse('note_keeper:index'))
+        context = self.get_context_data(object=self.object)
+        return self.render_to_response(context)
+
+
 def delete_note(request, note_title):
     if Note.objects.filter(pk=note_title).exists(): 
+        note = Note.objects.get(pk=note_title)
+        if note.user != request.user:
+            messages.info(request, 'You cannot delete other people note')
+            return HttpResponseRedirect(reverse('note_keeper:index'))
+        if not request.user.has_perm('note_keeper.delete_note'):
+            messages.info(request, 'No permission to delete')
+            return HttpResponseRedirect(reverse('note_keeper:index'))
         messages.info(request, 'Note title #{} has been deleted'.format(note_title))
         Note.objects.filter(pk=note_title).delete()
         return HttpResponseRedirect(reverse('note_keeper:index'))
@@ -48,6 +72,7 @@ def delete_note(request, note_title):
 
 
 def create_note(request):
+    user = request.user
     title = request.POST['title']
     content = request.POST['content']
     if not len(title) or not len(content):
@@ -57,7 +82,7 @@ def create_note(request):
     if Note.objects.filter(pk=title).exists():
         messages.info(request, 'Title is taken, remove the previous note first!')
         return HttpResponseRedirect(reverse('note_keeper:index'))
-    note = Note.objects.create(title=title, content=content) 
+    note = Note.objects.create(user=user, title=title, content=content) 
     note.save()
     messages.info(request, 'Note: {} has been saved'.format(title))
     return HttpResponseRedirect(reverse('note_keeper:index'))
